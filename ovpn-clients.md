@@ -5,13 +5,14 @@
 
 具体说明参考文档：[OpenVPN 客户端账号管理脚本](https://www.notion.so/jqgsninimo/WAR-b26fcfac9ce848b89468801395655420?pvs=4)
 
-## [1.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/v1.0.2)
+## [2.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/ovpn-clients-2.0)
 
 ## 使用方法
 ```
-ovpn-clients -hrimd [-c <clientId>] [-a <ipAddress>]
+ovpn-clients -hgrimd [-c <clientId>] [-a <ipAddress>]
 ```
 - `h`：显示工具说明。
+- `g`：向导模式。以友好的交互方式提供账号的增删改查功能。忽视其他参数。
 - `r`：显示 ID 匹配 `clientId` 且 IP 地址匹配 `ipAddress` 的客户端账号信息。
 
     账号信息包括：ID、固定 IP 地址和 OVPN 文件路径。

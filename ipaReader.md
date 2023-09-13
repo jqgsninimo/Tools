@@ -20,7 +20,7 @@
 - 编译版本：`Info.plist` → `CFBundleVersion`
 - 应用版本：`Info.plist` → `CFBundleShortVersionString`
 
-## [1.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/v1.0.0)
+## [1.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/ipa-reader-1.0)
 
 ## 使用方法
 ```

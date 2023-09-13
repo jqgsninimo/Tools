@@ -5,7 +5,7 @@
 
 具体说明参考文档：[多服务器 WAR 包生成脚本](https://www.notion.so/jqgsninimo/WAR-b26fcfac9ce848b89468801395655420?pvs=4)
 
-## [1.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/v1.0.1)
+## [1.0版发布页](https://github.com/jqgsninimo/Tools/releases/tag/multiple-wars-1.0)
 
 ## 使用方法
 ```
