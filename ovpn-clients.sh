@@ -4,7 +4,7 @@
 # 脚本名称
 typeset sh_name=${0##*/}
 # 脚本版本
-typeset sh_version=2.0
+typeset sh_version=2.1
 # 脚本描述
 typeset sh_description="OpenVPN client accounts manager"
 # 未定义时显示内容
@@ -343,6 +343,30 @@ insert_client() {
 		if ((? == 0)); then return 0; fi
 	fi
 
+	# 判断公网ID是否指向公网IP
+	# 如果指向公网IP，使用公网ID
+	# 如果未指向公网IP，询问用户，若用户同意则使用公网ID
+	# 其他情况使用公网IP
+	local remote_id=$ovpn_ip
+	if [[ -n $ovpn_id ]]; then
+		if [[ $ovpn_id != $ovpn_ip ]]; then
+			local ip=$(host -t A $ovpn_id)
+			ip=${ip##* }
+			if [[ $ip != $ovpn_ip ]]; then
+				show "The configured network-id [$ovpn_id] does not point to the public IP address [$ovpn_ip].\n\
+Please confirm which one to use as the remote address in the client conf file.\n\
+Should the network ID [$ovpn_id] be used?" ask
+				echo -n "Yes(y) or No: "
+				read response
+				if [[ ${response:l} != "y" && ${response:l} != "yes" ]]; then
+    			remote_id=$ovpn_id
+				fi
+			else
+				remote_id=$ovpn_id
+			fi
+		fi
+	fi
+
 	# 创建客户
 	# 进入easy-rsa目录
 	cd easy-rsa
@@ -361,7 +385,7 @@ insert_client() {
 client
 dev tun
 proto udp
-remote $ovpn_ip $ovpn_port
+remote $remote_id $ovpn_port
 resolv-retry infinite
 nobind
 persist-key
@@ -459,19 +483,28 @@ delete_clients() {
     return 2
 	fi
 
-	# 删除客户相关文件
+	# 删除客户
+	# 进入EasyRSA目录
+	cd easy-rsa
 	for id in $selected_ids; do
-		# ①删除请求文件
-		rm -f easy-rsa/pki/reqs/${id}.req
-		# ②删除密钥文件
-		rm -f easy-rsa/pki/private/${id}.key
-		# ③删除证书文件
-		rm -f easy-rsa/pki/issued/${id}.crt
-		# ④删除地址文件
-		rm -f ccd/${id}
-		# ⑤删除配置文件
-		rm -f client/${id}.ovpn
+		# ①撤销证书
+		echo yes | ./easyrsa revoke ${id} > /dev/null 2>&1
+		# ②更新证书撤销列表（CRL）
+		./easyrsa gen-crl > /dev/null 2>&1
+		# ③删除请求文件
+		rm -f pki/reqs/${id}.req
+		# ④删除密钥文件
+		rm -f pki/private/${id}.key
+		# ⑤删除证书文件
+		rm -f pki/issued/${id}.crt
+		# ⑥删除地址文件
+		rm -f ../ccd/${id}
+		# ⑦删除配置文件
+		rm -f ../client/${id}.ovpn
 	done
+	# 返回OpenVPN目录
+	cd ..
+
 	show "The clients have been deleted." result
 
 	return 1
@@ -785,6 +818,8 @@ main() {
 
 	# 获取服务器公网IP
 	ovpn_ip=$(curl -s https://api.ipify.org)
+	# 获取服务器公网ID
+	ovpn_id=$(conf $ovpn_conf network-id)
 	# 获取OVPN服务端口号
 	ovpn_port=$(conf $ovpn_conf port)
 	# 获取OVPN子网
